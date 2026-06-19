@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente PQRSF · Ferrosvel</title>
+<style>
+:root{
+  --rust:#d81f1f; --rust-dark:#a81616; --rust-light:#fdeaea;
+  --steel:#1b2733; --steel-mid:#2d3f50; --steel-light:#5a7088;
+  --cream:#eef1f3; --paper:#ffffff; --line:#dde2e6;
+  --green:#1e5631; --green-light:#eaf3ec;
+  --ink:#1a1f24; --ink-mid:#4a5568; --ink-light:#8a9ab0;
+  --shadow: 0 8px 40px -12px rgba(0,0,0,0.22);
+  --r:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Poppins','Segoe UI',system-ui,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+
+/* ── TOP BAR ── */
+.topbar{
+  background:#ffffff;
+  padding:14px 28px;
+  display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--line);
+}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-mark{display:flex;flex-direction:column;gap:3px;}
+.topbar-mark-row{display:flex;gap:3px;align-items:center;}
+.topbar-mark-tri{width:0;height:0;border-style:solid;border-width:8px 0 8px 12px;border-color:transparent transparent transparent var(--rust);}
+.topbar-mark-dot{width:13px;height:13px;border-radius:50%;background:var(--rust);}
+.topbar-mark-bar{width:13px;height:7px;background:var(--rust);border-radius:1px;}
+.topbar-logo{
+  font-weight:800;font-size:19px;letter-spacing:-0.01em;color:var(--ink);
+}
+.topbar-logo span{color:var(--rust);}
+.topbar-tag{
+  font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink-light);border-left:1px solid var(--line);padding-left:14px;
+}
+.topbar-role-badge{
+  margin-left:auto;font-size:12px;font-weight:600;
+  padding:5px 14px;border-radius:20px;display:none;
+}
+.topbar-role-badge.asesor{background:var(--rust-light);color:var(--rust-dark);}
+.topbar-role-badge.analista{background:var(--green-light);color:var(--green);}
+
+/* ── WELCOME SCREEN ── */
+#welcome{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:calc(100vh - 56px);
+  padding:40px 20px;
+}
+.welcome-card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--shadow);
+  max-width:520px;width:100%;overflow:hidden;
+}
+.welcome-header{
+  background:linear-gradient(135deg, var(--rust) 0%, var(--rust-dark) 100%);
+  padding:36px 36px 28px;
+}
+.welcome-eyebrow{
+  font-size:11px;letter-spacing:0.14em;text-transform:uppercase;
+  color:#ffd9d9;font-weight:700;margin-bottom:10px;
+}
+.welcome-title{
+  font-size:26px;font-weight:700;color:#fff;line-height:1.2;
+  margin-bottom:8px;
+}
+.welcome-sub{font-size:14px;color:#ffe4e4;line-height:1.5;}
+.welcome-body{padding:32px 36px;}
+.welcome-q{
+  font-size:15px;color:var(--ink-mid);margin-bottom:20px;font-weight:500;
+}
+.role-buttons{display:flex;flex-direction:column;gap:12px;}
+.role-btn{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 20px;border-radius:var(--r);
+  border:2px solid var(--line);background:var(--cream);
+  cursor:pointer;text-align:left;transition:all 0.18s ease;
+}
+.role-btn:hover{border-color:var(--rust);background:var(--rust-light);}
+.role-btn.green:hover{border-color:var(--green);background:var(--green-light);}
+.role-icon{
+  width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.role-btn .role-icon{background:var(--rust-light);}
+.role-btn.green .role-icon{background:var(--green-light);}
+.role-info{flex:1;}
+.role-name{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.role-desc{font-size:13px;color:var(--ink-mid);line-height:1.4;}
+.role-arrow{font-size:18px;color:var(--ink-light);}
+
+/* ── CHAT SCREEN ── */
+#chat{display:none;flex-direction:column;height:calc(100vh - 56px);}
+.chat-header{
+  background:var(--paper);border-bottom:1px solid var(--line);
+  padding:12px 20px;display:flex;align-items:center;gap:12px;
+}
+.back-btn{
+  background:none;border:1px solid var(--line);
+  border-radius:var(--r);padding:7px 14px;cursor:pointer;
+  font-size:13px;color:var(--ink-mid);display:flex;align-items:center;gap:6px;
+  transition:all 0.15s;
+}
+.back-btn:hover{border-color:var(--ink-mid);color:var(--ink);}
+.chat-role-label{
+  font-size:13px;font-weight:600;padding:5px 14px;border-radius:20px;
+}
+.chat-role-label.asesor{background:var(--rust-light);color:var(--rust-dark);}
+.chat-role-label.analista{background:var(--green-light);color:var(--green);}
+.chat-hint{font-size:12px;color:var(--ink-light);margin-left:auto;}
+
+.messages{
+  flex:1;overflow-y:auto;padding:24px 20px;
+  display:flex;flex-direction:column;gap:16px;
+  max-width:820px;width:100%;margin:0 auto;
+}
+.msg{display:flex;gap:12px;align-items:flex-start;animation:fadein 0.3s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.msg.user{flex-direction:row-reverse;}
+.avatar{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;
+}
+.msg.bot .avatar{background:var(--steel);color:#fff;}
+.msg.user .avatar{background:var(--rust);color:#fff;}
+.bubble{
+  max-width:78%;padding:13px 16px;border-radius:var(--r);
+  font-size:14.5px;line-height:1.65;white-space:pre-wrap;
+}
+.msg.bot .bubble{background:var(--paper);border:1px solid var(--line);color:var(--ink);}
+.msg.user .bubble{background:var(--rust);color:#fff;}
+
+.typing{display:flex;align-items:center;gap:5px;padding:14px 16px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink-light);
+  animation:bounce 1.2s infinite;}
+.dot:nth-child(2){animation-delay:0.2s;}
+.dot:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-7px);}}
+
+/* Quick chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.chip{
+  font-size:12.5px;padding:6px 13px;border-radius:20px;
+  border:1px solid var(--line);background:var(--paper);
+  cursor:pointer;color:var(--ink-mid);transition:all 0.15s;
+}
+.chip:hover{border-color:var(--rust);color:var(--rust-dark);background:var(--rust-light);}
+
+/* Input area */
+.input-area{
+  background:var(--paper);border-top:1px solid var(--line);
+  padding:14px 20px;
+}
+.input-wrap{
+  max-width:820px;margin:0 auto;
+  display:flex;gap:10px;align-items:flex-end;
+}
+#userInput{
+  flex:1;font-family:inherit;font-size:14.5px;
+  padding:11px 14px;border:1.5px solid var(--line);border-radius:var(--r);
+  background:var(--cream);resize:none;min-height:44px;max-height:140px;
+  transition:border-color 0.15s;line-height:1.5;
+}
+#userInput:focus{outline:none;border-color:var(--rust);background:#fff;}
+#sendBtn{
+  background:var(--rust);color:#fff;border:none;
+  border-radius:var(--r);padding:11px 20px;cursor:pointer;
+  font-size:14px;font-weight:600;white-space:nowrap;
+  transition:background 0.15s;flex-shrink:0;height:44px;
+}
+#sendBtn:hover{background:var(--rust-dark);}
+#sendBtn:disabled{background:var(--line);cursor:not-allowed;}
+.input-note{
+  max-width:820px;margin:6px auto 0;
+  font-size:11px;color:var(--ink-light);text-align:center;
+}
+
+/* Letter output */
+.letter-box{
+  background:#fafaf7;border:1px solid var(--line);border-left:4px solid var(--rust);
+  border-radius:var(--r);padding:18px;margin-top:10px;
+  font-family:'Courier New',monospace;font-size:13px;
+  line-height:1.7;white-space:pre-wrap;
+}
+.copy-btn{
+  margin-top:10px;background:var(--steel);color:#fff;
+  border:none;border-radius:var(--r);padding:8px 16px;
+  font-size:12px;cursor:pointer;font-weight:600;
+}
+.copy-btn:hover{background:#111;}
+
+@media(max-width:600px){
+  .welcome-header,.welcome-body{padding:24px 20px;}
+  .welcome-title{font-size:22px;}
+  .role-btn{padding:14px 16px;}
+  .topbar-tag{display:none;}
+  .chat-hint{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-mark">
+      <div class="topbar-mark-row"><div class="topbar-mark-tri"></div><div class="topbar-mark-dot"></div></div>
+      <div class="topbar-mark-row"><div class="topbar-mark-bar"></div><div class="topbar-mark-bar"></div></div>
+    </div>
+    <div class="topbar-logo">Ferro<span>svel</span></div>
+  </div>
+  <div class="topbar-tag">Asistente PQRSF · PR-SC-001</div>
+  <div class="topbar-role-badge" id="topRoleBadge"></div>
+</div>
+
+<!-- WELCOME -->
+<div id="welcome">
+  <div class="welcome-card">
+    <div class="welcome-header">
+      <div class="welcome-eyebrow">Servicio al Cliente</div>
+      <div class="welcome-title">Asistente de Gestión PQRSF</div>
+      <div class="welcome-sub">Te guío en el procedimiento correcto según tu rol, y redacto los textos que necesitas listos para usar.</div>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-q">¿Con qué rol ingresas hoy?</div>
+      <div class="role-buttons">
+        <button class="role-btn" onclick="selectRole('asesor')">
+          <div class="role-icon">🤝</div>
+          <div class="role-info">
+            <div class="role-name">Asesor Comercial</div>
+            <div class="role-desc">Quiero saber qué datos pedir al cliente, cómo levantar la PQR en Mesa de Ayuda y obtener el mensaje listo para pegar.</div>
+          </div>
+          <div class="role-arrow">›</div>
+        </button>
+        <button class="role-btn green" onclick="selectRole('analista')">
+          <div class="role-icon">📋</div>
+          <div class="role-info">
+            <div class="role-name">Analista de Servicio al Cliente</div>
+            <div class="role-desc">Quiero saber cómo gestionar la PQR, a quién dirigirla, los tiempos, y obtener el texto de la carta para el cliente.</div>
+          </div>
+          <div class="role-arrow">›</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chat">
+  <div class="chat-header">
+    <button class="back-btn" onclick="goBack()">← Cambiar rol</button>
+    <span class="chat-role-label" id="chatRoleLabel"></span>
+    <span class="chat-hint">Describe la situación del cliente con detalle</span>
+    <button class="back-btn" onclick="cambiarApiKey()" title="Cambiar clave de Gemini">🔑</button>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea id="userInput" placeholder="Describe la situación…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="sendBtn" onclick="sendMessage()">Enviar</button>
+    </div>
+    <div class="input-note">Respuestas basadas en PR-SC-001 · Procedimiento de Gestión PQRSF Ferrosvel</div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let currentRole = null;
+let conversationHistory = [];
+let isLoading = false;
+
+// ── KNOWLEDGE BASE ──
+const KNOWLEDGE = `
+=== PROCEDIMIENTO PR-SC-001: GESTIÓN PQRSF Y NOVEDADES - FERROSVEL ===
+
+DEFINICIONES:
+- PQR: Peticiones, Quejas, Reclamos
+  * Petición: devolución de dinero, cambio de factura por error Ferrosvel, devolución de material, inactivación de clientes
+  * Queja: insatisfacción sin compensación (tiempos de entrega, asesores)
+  * Reclamo: exige solución/compensación (daños a terceros, faltante de material, valor mal cobrado, devolución de material por error Ferrosvel)
+- SF: Sugerencias, Felicitaciones
+- Novedad: situación no deseada en producto o entrega detectada por el conductor
+- ID: número único de identificación del caso en Mesa de ayuda
+- Cierre parcial: Ferrosvel da solución a la evidencia reportada por el cliente
+- Cierre total: Ferrosvel gestiona la causa raíz y aporta a la mejora interna
+
+POLÍTICAS GENERALES:
+1. El técnico responsable solo copia a personas de su área y a SAC. El Asesor solo se copia si se necesita información adicional.
+2. La trazabilidad de la PQR NO puede compartirse con el cliente de forma extraoficial. Solo el Analista de SAC puede hacerlo.
+3. Las respuestas al cliente se hacen únicamente por el correo oficial de SAC. No se admiten respuestas extraoficiales.
+4. Solo se gestionan PQR-SF reportadas a través de la plataforma "Mesa de ayuda".
+5. Toda PQR-SF debe registrar nombre completo del cliente, teléfono y correo electrónico, más documentación requerida según el caso.
+
+FLUJO GENERAL (ANALISTA):
+1) La PQR-SF llega a Mesa de ayuda (asesor, conductor vía app Soho, o Supervisor de Logística).
+2) Analista lee y en máx. 12h redirecciona al técnico inicial según tipo de caso.
+3) Técnico inicial (máx. 48h): investiga, valida evidencia, socializa causas/acciones con el Analista.
+4) Analista responde formalmente al cliente por correo (máx. 12h tras conclusión), sube el correo como soporte.
+5) Analista define técnico final para causa raíz y planes de mejora → cierre total.
+
+TABLA DE DIRECCIONAMIENTO (ANALISTA):
+- Devolución de material → Coordinador de Inventario / Administrador de Punto de Venta
+- Devolución de dinero → Coordinadora de Cartera
+- Daño a terceros → Coordinador de Transporte
+- Faltante de material → Coordinador de Logística
+- Inconformidad especificaciones técnicas (estándar) → Director/Analista de Compras
+- Inconformidad especificaciones técnicas (figurado) → Coordinador de Producción
+- Inconformidad especificaciones técnicas (procesado) → Jefe Centro de Servicios
+- Inconformidad por avería (estándar) → Coordinador de Logística
+- Inconformidad por avería (figurado) → Coordinador de Producción
+- Inconformidad por avería (procesado) → Jefe Centro de Servicios
+- Sugerencia / Felicitación / Otras PQR → Líder del proceso referido
+TIEMPO DE DIRECCIONAMIENTO: máx. 12 horas desde recepción del caso
+
+LEVANTAR PQR-SF / NOVEDAD (ASESOR):
+- Si el cliente detectó la situación: el asesor levanta la PQR-SF en Mesa de ayuda.
+- Si el conductor detectó una novedad: la registra en la app Soho del celular corporativo (conectada con Mesa de ayuda).
+- Si el Supervisor/Coordinador de Logística detectó la situación: levanta la Novedad en la app Soho.
+En todos los casos: llenar campos obligatorios (asterisco rojo), adjuntar documentación requerida, clic en AGREGAR INFORMACIÓN. La plataforma asigna un ID único.
+
+DOCUMENTACIÓN REQUERIDA POR TIPO DE CASO (ASESOR):
+a) Daño a terceros: Fotos/videos de la afectación (vehículos, motos, fachadas, puertas) + Remisión PDF
+b) Inconformidad en entregas (averías/especificaciones): Fotos/videos de la afectación + Remisión PDF + Comunicado informando lo sucedido
+c) Faltante de material: Remisión PDF + Evidencias del descargue (si tiene) + Despiece si aplica
+d) Inactivación de clientes: Comunicado solicitando eliminación de la base de datos
+e) Felicitaciones/Agradecimientos/Reconocimientos/Sugerencias: Comunicado expresando la situación
+f) Solicitud de documentos: Comunicado especificando cuáles documentos necesita
+g) Cambio de Asesor: Comunicado solicitando el cambio con el motivo
+h) Cambio de factura por error Ferrosvel: Carta firmada por el cliente/representante legal indicando el error + Copia de cédula de quien firma + RUT si aplica + Copia de factura a corregir
+i) Devolución de dinero empresa: Carta firmada por representante legal en papel membrete/sello indicando motivo, valor y número de cuenta + Copia cédula representante legal + RUT + Cámara de comercio actualizada + Certificación bancaria <90 días + Soporte de pago + Si devolución va a otra cuenta: carta autenticada por notaría
+i) Devolución de dinero persona natural: Carta firmada indicando motivo, valor y número de cuenta + Copia cédula + Certificación bancaria <90 días + Soporte de pago + Si devolución va a otra cuenta: carta autenticada por notaría
+j) Devolución de material figurado/procesado con defecto de fábrica: Fotos/videos con dimensiones + Remisión PDF + Despiece con el error de fabricación
+j) Devolución de material estándar: Fotos/videos con dimensiones + Remisión PDF + Punto de venta donde el cliente realizará la devolución
+k) Mayor/menor valor cobrado: Copia de factura a modificar + Remisión PDF + Cuadro diligenciado con el valor correcto
+
+DEVOLUCIÓN DE MATERIAL - CONSIDERACIONES ADICIONALES (ASESOR):
+Para levantar la PQR de devolución de material, el asesor debe:
+1) Confirmar el punto de venta al que se devolverá el material.
+2) Confirmar la decisión del cliente:
+   - Llevar otro material: validar que el pedido esté montado; notificar a Auxiliares de administración de pedidos o cajero; verificar saldo y estado del pedido.
+   - Dejar saldo a favor: hacer seguimiento a la PQR para informar al cliente el número de nota crédito cuando Ferrosvel reciba la devolución.
+   - Solicitar devolución de dinero: hacer seguimiento para garantizar que se active el flujo DEVOLUCIÓN DE DINERO.
+
+DEVOLUCIÓN DE MATERIAL - GESTIÓN ANALISTA:
+1) Verificar que el material NO supere 30 días desde salida del almacén.
+   - Más de 30 días: junto a Coordinadora de Admón. Comercial y SAC, decidir:
+     * No se acepta: sustentar por correo al cliente; plazo de 5 días para apelar; sin respuesta → cierre total.
+     * Se acepta: argumentar aprobación en la PQR; redireccionar al técnico inicial (Coord. Inventario / Admor. PDV).
+2) Técnico inicial (máx. 48h) investiga el origen:
+   - Por el Asesor: Asesor y Analista elaboran carta de disculpas + plazo de recogida (coord. con Coord. de Transporte). El Asesor asume el costo del transporte.
+   - Por Logística/Producción: Técnico + Analista elaboran carta de disculpas + plazo de recogida. El técnico final registra acciones correctivas.
+   - Por el cliente: Asesor y Analista definen con el cliente quién lleva el material de regreso y en qué punto.
+     * Si el cliente lo trae: plazo de 5 días hábiles desde aprobación; si no cumple → cierre total.
+     * Si Ferrosvel recoge: cliente asume costos de transporte. Asesor cotiza con Coord. de Transporte según peso/volumen/punto; cliente debe aprobar antes de facturar.
+3) Notificar al Admor. PDV, Coord. Logística Sede Belén o Jefe Centro Servicio Guayabal que recibirán la devolución.
+4) Al recibir material a conformidad: Admor. PDV o Auxiliar de Inventarios genera nota crédito en SIESA. Nota crédito 100%: requiere aprobación de la Coordinadora.
+5) Cierre parcial → técnico final → cierre total.
+IMPORTANTE: Solo se reciben devoluciones autorizadas mediante PQR. Si el cliente llega sin PQR, NO se acepta hasta que el Analista dé el aval.
+
+FALTANTE DE MATERIAL - GESTIÓN ANALISTA:
+1) Recibir la PQR; en máx. 12h redireccionar al Coordinador de Logística.
+2) Técnico inicial (máx. 48h): valida registro fotográfico de salida del vehículo, báscula; si es figurado verifica planilla de producción; si es estándar verifica inventario en planta vs. SIESA.
+3) Analista + Coord. de Logística concluyen:
+   - No es responsabilidad de Ferrosvel: correo al cliente con razones + plazo de 5 días para apelar → sin respuesta: cierre total.
+   - Sí es responsabilidad de Ferrosvel:
+     * Cliente quiere el material: Asesor monta nuevo pedido; entrega sin costo adicional de transporte dentro de la zona de cobertura. Cierre parcial cuando el cliente recibe el material.
+     * Cliente quiere devolución de dinero: activar flujo DEVOLUCIÓN DE DINERO. Cierre parcial al confirmar el egreso.
+4) Técnico final → cierre total.
+
+INCONFORMIDAD POR AVERÍAS - GESTIÓN ANALISTA:
+1) Recibir la PQR; redireccionar al Coordinador de Logística Sede Belén o Jefe del Centro de Servicio Guayabal.
+2) Técnico inicial: investiga registro fotográfico del material despachado, estado del inventario, procedimiento de cargue/almacenamiento/transporte.
+3) Concluyen:
+   - No es responsabilidad de Ferrosvel: carta al cliente con razones + plazo de 5 días calendario para apelar → sin respuesta: cierre total.
+   - Sí es responsabilidad de Ferrosvel: Analista redirecciona al técnico final; juntos elaboran carta de disculpas al cliente informando el plazo de recogida (acordado con Coord. de Transporte).
+4) Al recibir el material: Auxiliar de inventario valida cantidad, referencia y estado. Coordinador de Inventario define disposición final (disponible, reproceso o no conforme). Auxiliar genera nota crédito y sube soporte.
+5) Cierre parcial → técnico final → cierre total.
+
+DEVOLUCIÓN DE DINERO - GESTIÓN ANALISTA:
+1) Verificar origen: devolución de material previa (NO nueva PQR) o caso nuevo (SÍ nueva PQR).
+2) Validar motivo: causa cliente (doble transferencia, sobrante, error) → informar que se cobra 4x1000. Causa Ferrosvel: sin cobro adicional.
+3) Contactar al cliente para intentar evitar la devolución. Si desiste → cierre total.
+4) Si persiste: asignar PQR a Coordinadora de Cartera para verificación documental.
+   - Documentación incompleta: notificar al cliente que tiene 24h para subsanar; sin respuesta → cierre total. El asesor también queda al tanto.
+5) Documentos aprobados por Cartera → cadena de aprobaciones: 1) Dirección Comercial, 2) Jefe de Contabilidad, 3) Gerencia General, 4) Coordinación de Cartera.
+   Si hay errores en el formato → notificar al Auxiliar de Cartera para corregir, reimprimir y volver a recolectar firmas.
+6) Cartera pasa formato firmado a Coordinadora de Tesorería quien genera el pago y adjunta comprobante.
+7) Analista informa al cliente por correo la devolución, adjuntando carta de cierre y comprobante del egreso → cierre total.
+NOTA: No enviar correos al cliente directamente en la trazabilidad de la PQR.
+
+DAÑO A TERCEROS - GESTIÓN ANALISTA:
+1) Dos vías de llegada:
+   - Colaboradores de Ferrosvel detectan el daño: deben comunicarse inmediatamente con el Jefe de Transporte y diligenciar el formato "Reporte de daños a terceros". Si no notifica → escalar a Gestión Humana.
+   - El tercero contacta al asesor comercial: el asesor levanta la PQR.
+2) Asignar PQR al Coordinador de Transporte.
+3) Coord. de Transporte investiga con conductor y auxiliar; evalúa condiciones ambientales, vías, responsabilidad directa del conductor. Si hay responsabilidad directa del conductor → escalar a Gestión Humana.
+4) Si Ferrosvel NO tiene implicación: carta al afectado con razones + plazo de 48h para responder → sin respuesta: cierre total.
+5) Si procede el reclamo:
+   - Daño supera $4.000.000: contactar a la aseguradora con toda la evidencia. Aseguradora emite número de siniestro; Coord. de Transporte realiza seguimiento. Aseguradora evalúa, genera informe y determina deducible. Coord. de Transporte entrega documentación a Contabilidad para tramitar el pago → cierre total.
+   - Ferrosvel asume el costo: Coord. de Transporte consulta si el tercero tiene proveedor y solicita cotización; Ferrosvel busca mínimo 3 cotizaciones adicionales. Director de Logística e Inventario selecciona el proveedor. Coord. de Logística coordina y hace seguimiento. Al finalizar: solicitar "paz y salvo" firmado por el tercero. Subir toda la documentación a la PQR → cierre parcial por la Coordinadora de Admón. Comercial y SAC.
+
+INCONFORMIDAD POR ESPECIFICACIONES TÉCNICAS - GESTIÓN ANALISTA:
+1) Recibir PQR (evidencia fotográfica, remisión PDF, detalle de la solicitud).
+2) Validar:
+   - Si el cliente ya usó o transformó el material → reclamo NO procede; cierre total.
+   - Si el cliente hizo pruebas técnicas propias → solo aplican si el laboratorio está certificado.
+3) Determinar origen:
+   - Procesos internos (corte, doblado, figuración): redireccionar al Jefe de Producción (Figuración / Centro de Servicios).
+   - Calidad de materia prima: redireccionar al Coordinador de Inventarios; el Analista de Compras realiza el reclamo formal al proveedor por correo con remisión y lote.
+4) Si el proveedor requiere visita: el Coord. de Admón. Comercial y SAC coordina y acompaña.
+5) Respuesta del proveedor:
+   - No procede: Analista de Compras comunica rechazo al Coord. de Admón. Comercial y SAC para enviar notificación al cliente → cierre total.
+   - Sí procede (nota crédito, descuento o cambio 1:1): aclarar necesidad del cliente: cambiar 1:1, llevar otro material, dejar saldo a favor, o solicitar devolución de dinero. Para las 3 últimas opciones → activar flujo DEVOLUCIÓN DE MATERIAL.
+6) Notificar al Admor. PDV, Supervisor de Planta Sede Belén o Jefe Centro Servicio Guayabal que recibirán el material. Al recibirlo físicamente → cierre parcial → técnico final → cierre total.
+
+SUGERENCIAS Y FELICITACIONES - GESTIÓN ANALISTA:
+1) Asesor levanta la SF en Mesa de ayuda.
+2) Analista redirecciona al líder del proceso referido (técnico inicial).
+3) Líder analiza la sugerencia y define plan de acción, o divulga la felicitación.
+4) Analista y técnico final elaboran respuesta formal al cliente por correo; suben como soporte a la PQR → cierre total.
+
+NOVEDADES - CONSIDERACIONES ADICIONALES:
+- Las novedades deben gestionarse de forma PRIORITARIA por todos los procesos.
+- El conductor: constata que el material no coincide con la remisión; contacta al Coord. de Transporte para conciliar con el cliente. Si no es posible → registra novedad en app Soho + solicita al cliente firmar la observación en la remisión.
+- El Analista tiene máx. 12h para leer la novedad y redireccionarla al técnico inicial mediante Mesa de ayuda.
+
+TIEMPOS CLAVE DEL PROCESO:
+- Direccionar al técnico inicial: máx. 12 horas
+- Investigación del técnico inicial: máx. 48 horas
+- Respuesta formal al cliente: máx. 12 horas tras conclusión
+- Subsanar documentación devolución de dinero: 24 horas
+- Plazo para que el cliente apele una decisión (la mayoría de casos): 5 días
+- Plazo para que el cliente traiga material a devolver: 5 días hábiles
+- Tiempo estimado de respuesta al cliente (carta de proceso): 15 días hábiles
+`;
+
+const SYSTEM_ASESOR = `Eres el asistente de Servicio al Cliente de Ferrosvel para el rol de ASESOR COMERCIAL.
+
+FUENTE ÚNICA DE INFORMACIÓN:
+${KNOWLEDGE}
+
+TU FUNCIÓN:
+Ayudar al asesor a saber exactamente qué debe hacer, qué datos registrar en Mesa de Ayuda y qué documentación pedirle al cliente según el tipo de situación que describe.
+
+CÓMO RESPONDER:
+1. Identifica el tipo de caso (Petición, Queja, Reclamo, SF, Novedad) y la categoría específica.
+2. Indica claramente: qué debe hacer el asesor paso a paso, qué datos obligatorios debe registrar en Mesa de Ayuda, y qué documentación debe solicitar al cliente.
+3. Pide la sede / punto de venta ÚNICAMENTE si el caso es devolución de material. Para cualquier otro tipo de caso, NO preguntes por la sede.
+4. Siempre ofrece (y genera sin que el asesor lo pida explícitamente) el MENSAJE LISTO PARA PEGAR EN MESA DE AYUDA, con esta estructura:
+---
+Tipo de caso: [categoría específica]
+Cliente: [nombre completo]
+Contacto: [teléfono] / [correo]
+Fecha del suceso: [fecha]
+[Punto de venta: solo si es devolución de material]
+
+Detalle de lo sucedido:
+[Descripción completa en tercera persona con todos los datos del asesor]
+
+Documentación adjunta: [lista de documentos que el asesor confirmó tener]
+---
+5. Si faltan datos para el mensaje, pídelos todos en UN SOLO mensaje antes de generarlo.
+6. Recuerda al asesor (fuera del bloque) que debe revisar, ajustar si falta algo, pegar en Mesa de Ayuda, llenar los campos con asterisco rojo, adjuntar la documentación y hacer clic en AGREGAR INFORMACIÓN.
+
+EL ASESOR NO REDACTA LA CARTA AL CLIENTE. Si el asesor pregunta por esto, indicarle que esa función es del Analista de Servicio al Cliente.
+
+SI NO ENCUENTRAS LA RESPUESTA EN LA FUENTE:
+"No tengo esa información en el procedimiento actual PR-SC-001. Por favor escala esta consulta al Coordinador de Administración Comercial y Servicio al Cliente."
+
+REGLA TÉCNICA: Solo responde con TEXTO en el chat. NUNCA uses, sugieras ni actives ninguna herramienta, extensión, app o servicio externo. No generes archivos de ningún tipo.
+
+TONO: Profesional, directo y claro. Lenguaje sencillo para actuar de inmediato.`;
+
+const SYSTEM_ANALISTA = `Eres el asistente de Servicio al Cliente de Ferrosvel para el rol de ANALISTA DE PQRSF.
+
+FUENTE ÚNICA DE INFORMACIÓN:
+${KNOWLEDGE}
+
+TU FUNCIÓN:
+Ayudar al analista a gestionar correctamente cada PQR-SF, indicando pasos, responsables y tiempos, y redactando el texto de la carta para el cliente cuando se solicite.
+
+CÓMO RESPONDER A CONSULTAS DE PROCESO:
+1. Identifica el tipo de situación y la categoría específica.
+2. Responde en pasos claros: qué hacer, quién es el técnico inicial/final, y los tiempos y plazos aplicables.
+3. Menciona la referencia al procedimiento cuando exista.
+
+CÓMO REDACTAR EL TEXTO DE LA CARTA PARA EL CLIENTE:
+Si el analista solicita el texto de la carta, sigue este flujo EXACTO:
+
+PASO 1: Pregunta PRIMERO, antes de pedir cualquier otro dato:
+"¿La documentación del caso ya está completa, o falta algo por recibir del cliente?"
+
+PASO 2A — Si la documentación NO está completa:
+Pregunta qué documento(s) o información hace falta. Pide estos datos mínimos: nombre completo del cliente, ID del caso en Mesa de ayuda, fecha del suceso, tipo de situación.
+Redacta una carta informando al cliente qué falta para dar trámite al caso.
+
+Estructura de la carta (documentación incompleta):
+- Saludo formal con el nombre del cliente
+- Referencia al ID del caso y fecha del suceso
+- Mención de que se recibió su solicitud relacionada con [tipo de caso]
+- Indicación clara de qué documento(s) falta(n) para poder dar trámite
+- Solicitud de envío a la brevedad para continuar con el proceso
+- Cierre formal y firma "Servicio al Cliente - Ferrosvel"
+
+PASO 2B — Si la documentación SÍ está completa:
+Pide (si no los tiene) en UN SOLO mensaje: nombre completo del cliente, ID del caso, tipo de situación, fecha del suceso.
+Redacta la carta indicando que la PQRSF está en proceso.
+
+Estructura de la carta (documentación completa):
+- Saludo formal con el nombre del cliente
+- Referencia al ID del caso y fecha del suceso
+- Resumen breve de la situación reportada
+- Indicación de que la documentación fue recibida completa y el caso está en proceso de revisión y gestión
+- Tiempo estimado de respuesta: 15 días hábiles
+- Cierre formal y firma "Servicio al Cliente - Ferrosvel"
+
+PASO 3: Entrega el texto completo de la carta como texto plano en el chat, listo para copiar.
+PASO 4: Recuerda al analista (fuera del texto) que la carta debe enviarse SOLO desde el correo oficial de SAC y subirse como soporte al ID en Mesa de Ayuda.
+
+NOTA: Si el analista pide la carta de decisión final (aceptado/no aceptado/aprobado/rechazado), pide los datos necesarios y redacta con esa decisión en lugar del mensaje de "en proceso".
+
+SI NO ENCUENTRAS LA RESPUESTA EN LA FUENTE:
+"No tengo esa información en el procedimiento actual PR-SC-001. Por favor escala esta consulta al Coordinador de Administración Comercial y Servicio al Cliente."
+
+REGLA TÉCNICA: Solo responde con TEXTO en el chat. NUNCA uses, sugieras ni actives ninguna herramienta, extensión, app o servicio externo. No generes archivos de ningún tipo.
+
+TONO: Profesional, directo y claro. Para cartas: formal, respetuoso y empático.`;
+
+const QUICK_CHIPS = {
+  asesor: [
+    "El cliente quiere devolver material",
+    "El cliente pide devolución de dinero",
+    "Llegó menos material del pedido",
+    "El material llegó averiado",
+    "El cliente tiene un daño a terceros",
+    "El cliente quiere felicitar al equipo"
+  ],
+  analista: [
+    "¿A quién dirijo una devolución de material?",
+    "El cliente pide devolución de dinero",
+    "Reclamo por faltante de material",
+    "Necesito redactar carta al cliente",
+    "Daño a terceros – ¿cómo procedo?",
+    "Inconformidad por especificaciones técnicas"
+  ]
+};
+
+const WELCOME_MSGS = {
+  asesor: `Hola 👋 Soy tu asistente para el rol de **Asesor Comercial**.
+
+Cuéntame qué situación te está reportando el cliente y te indico:
+• Qué debes hacer paso a paso
+• Qué datos registrar en Mesa de Ayuda
+• Qué documentos pedirle al cliente
+• El mensaje listo para pegar en Mesa de Ayuda
+
+¿Con qué caso trabajamos hoy?`,
+  analista: `Hola 👋 Soy tu asistente para el rol de **Analista de Servicio al Cliente**.
+
+Cuéntame qué tipo de PQR-SF o Novedad estás gestionando y te indico:
+• Los pasos correctos del procedimiento
+• El técnico inicial a quien direccionar
+• Los tiempos y plazos aplicables
+• El texto de la carta para el cliente si lo necesitas
+
+¿Con qué caso trabajamos hoy?`
+};
+
+// ── ROLE SELECTION ──
+function selectRole(role) {
+  currentRole = role;
+  conversationHistory = [];
+  document.getElementById('welcome').style.display = 'none';
+  const chat = document.getElementById('chat');
+  chat.style.display = 'flex';
+
+  const label = document.getElementById('chatRoleLabel');
+  label.className = 'chat-role-label ' + role;
+  label.textContent = role === 'asesor' ? '🤝 Asesor Comercial' : '📋 Analista de SAC';
+
+  const badge = document.getElementById('topRoleBadge');
+  badge.className = 'topbar-role-badge ' + role;
+  badge.textContent = role === 'asesor' ? 'Asesor Comercial' : 'Analista de SAC';
+  badge.style.display = 'block';
+
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = '';
+  addBotMessage(WELCOME_MSGS[role], true);
+  document.getElementById('userInput').focus();
+}
+
+function goBack() {
+  document.getElementById('chat').style.display = 'none';
+  document.getElementById('welcome').style.display = 'flex';
+  document.getElementById('topRoleBadge').style.display = 'none';
+  currentRole = null;
+  conversationHistory = [];
+}
+
+// ── MESSAGES ──
+function addBotMessage(text, showChips = false) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+
+  const isLetter = text.includes('Estimado') || text.includes('Cordialmente') || text.includes('Servicio al Cliente — Ferrosvel');
+
+  let content = '';
+  if (isLetter) {
+    content = `<div class="avatar">F</div>
+      <div>
+        <div class="bubble">Aquí tienes el texto de la carta listo para copiar:</div>
+        <div class="letter-box">${escHtml(text)}</div>
+        <button class="copy-btn" onclick="copyLetter(this)">📋 Copiar texto</button>
+      </div>`;
+  } else {
+    content = `<div class="avatar">F</div><div class="bubble">${formatText(text)}</div>`;
+  }
+
+  div.innerHTML = content;
+  msgs.appendChild(div);
+
+  if (showChips && currentRole) {
+    const chipDiv = document.createElement('div');
+    chipDiv.className = 'msg bot';
+    chipDiv.innerHTML = `<div class="avatar" style="visibility:hidden">F</div>
+      <div class="chips">${QUICK_CHIPS[currentRole].map(c =>
+        `<span class="chip" onclick="sendChip('${c}')">${c}</span>`
+      ).join('')}</div>`;
+    msgs.appendChild(chipDiv);
+  }
+
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="avatar">Yo</div><div class="bubble">${escHtml(text)}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTyping() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing-indicator';
+  div.innerHTML = `<div class="avatar">F</div>
+    <div class="bubble typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatText(text) {
+  return escHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+function copyLetter(btn) {
+  const box = btn.previousElementSibling;
+  navigator.clipboard.writeText(box.textContent).then(() => {
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => btn.textContent = '📋 Copiar texto', 2000);
+  });
+}
+
+// ── SEND ──
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addUserMessage(text);
+
+  conversationHistory.push({ role: 'user', content: text });
+  await callClaude();
+}
+
+function sendChip(text) {
+  document.getElementById('userInput').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+// ── GOOGLE GEMINI API ──
+const GEMINI_MODEL = 'gemini-2.0-flash';
+
+async function callClaude() {
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  addTyping();
+
+  const systemPrompt = currentRole === 'asesor' ? SYSTEM_ASESOR : SYSTEM_ANALISTA;
+
+  const API_KEY = (localStorage.getItem('fv_api_key') || '');
+
+  if (!API_KEY) {
+    removeTyping();
+    addBotMessage('No encontré tu clave de API. Por favor recarga la página y vuelve a configurarla.');
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+    return;
+  }
+
+  // Gemini usa "contents" con role 'user' / 'model' (no 'assistant'), y el
+  // system prompt se envía aparte en "systemInstruction".
+  const geminiContents = conversationHistory.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: geminiContents,
+          generationConfig: { maxOutputTokens: 1000 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    removeTyping();
+
+    if (!response.ok) {
+      const msg = data?.error?.message || 'Error desconocido al contactar Gemini.';
+      addBotMessage(`Ocurrió un error al obtener la respuesta (${response.status}): ${msg}`);
+      console.error('Gemini API error:', data);
+      isLoading = false;
+      document.getElementById('sendBtn').disabled = false;
+      document.getElementById('userInput').focus();
+      return;
+    }
+
+    const candidate = data?.candidates?.[0];
+    const reply = candidate?.content?.parts?.map(p => p.text || '').join('\n').trim();
+
+    if (reply) {
+      conversationHistory.push({ role: 'assistant', content: reply });
+      addBotMessage(reply, false);
+    } else if (candidate?.finishReason === 'SAFETY') {
+      addBotMessage('La respuesta fue bloqueada por filtros de seguridad. Intenta reformular tu consulta.');
+    } else {
+      addBotMessage('Ocurrió un error al obtener la respuesta. Por favor intenta de nuevo.');
+      console.error('Respuesta inesperada de Gemini:', data);
+    }
+  } catch (err) {
+    removeTyping();
+    addBotMessage('No se pudo conectar con el asistente. Verifica tu conexión e intenta de nuevo.');
+    console.error(err);
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('userInput').focus();
+}
+
+// ── API KEY SETUP ──
+function activarAsistente() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  var err = document.getElementById('keyError');
+  if (!key || key.length < 15) {
+    err.style.display = 'block';
+    err.textContent = 'Por favor ingresa una clave válida de Google AI Studio.';
+    return;
+  }
+  localStorage.setItem('fv_api_key', key);
+  document.getElementById('setupModal').style.display = 'none';
+  document.getElementById('welcome').style.display = 'flex';
+}
+
+function cambiarApiKey() {
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('keyError').style.display = 'none';
+  document.getElementById('chat').style.display = 'none';
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('setupModal').style.display = 'flex';
+}
+
+window.addEventListener('load', function() {
+  var key = localStorage.getItem('fv_api_key');
+  if (!key || key.length < 15) {
+    document.getElementById('setupModal').style.display = 'flex';
+    document.getElementById('welcome').style.display = 'none';
+  }
+});
+
+</script>
+
+<div id="setupModal" style="display:none;position:fixed;inset:0;background:rgba(28,31,36,0.75);z-index:200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:6px;max-width:480px;width:100%;box-shadow:0 20px 60px -20px rgba(0,0,0,0.5);overflow:hidden;">
+    <div style="background:linear-gradient(135deg, #d81f1f 0%, #a81616 100%);padding:28px 28px 22px;">
+      <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#ffd9d9;font-weight:700;margin-bottom:8px;">Configuración inicial · Solo una vez</div>
+      <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;">Activar Asistente PQRSF</div>
+      <div style="font-size:13px;color:#ffe4e4;line-height:1.5;">Tu clave es gratuita y se guarda solo en este navegador. No queda en el código ni la ve nadie más.</div>
+    </div>
+    <div style="padding:28px;">
+      <label style="display:block;font-size:13px;color:#4a5568;font-weight:600;margin-bottom:6px;">API Key de Google Gemini (gratis)</label>
+      <input id="apiKeyInput" type="password" placeholder="AIza..."
+        style="width:100%;padding:11px 12px;border:1.5px solid #dde2e6;border-radius:6px;font-size:14px;font-family:monospace;margin-bottom:10px;box-sizing:border-box;">
+      <div style="font-size:12px;color:#8a9ab0;margin-bottom:8px;line-height:1.6;">
+        <strong>¿Cómo obtenerla? (toma 1 minuto, sin tarjeta de crédito)</strong><br>
+        1. Entra a <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#d81f1f;font-weight:600;">aistudio.google.com/app/apikey</a><br>
+        2. Inicia sesión con tu cuenta de Google<br>
+        3. Clic en "Create API Key" y cópiala aquí
+      </div>
+      <div style="font-size:11px;color:#a0aab8;margin-bottom:22px;">
+        El plan gratuito de Gemini incluye un número generoso de consultas diarias, suficiente para uso interno del equipo.
+      </div>
+      <button onclick="activarAsistente()"
+        style="width:100%;background:#d81f1f;color:#fff;border:none;border-radius:6px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.02em;">
+        Activar asistente →
+      </button>
+      <div id="keyError" style="display:none;color:#c0392b;font-size:13px;margin-top:12px;text-align:center;padding:8px;background:#fef0f0;border-radius:6px;"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
